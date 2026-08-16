@@ -52,6 +52,42 @@ Cada arquivo de agente segue o formato padrão de subagente do Claude Code:
 frontmatter (`name`, `description`, `tools`, opcionalmente `model`) seguido do prompt
 de sistema do agente.
 
+## Isolamento entre a infraestrutura de agentes e o código do projeto (portabilidade)
+
+Regra explícita do usuário: o desenvolvimento de um site de cliente não pode interferir
+na pasta onde os subagentes vivem. O motivo é a portabilidade — se o usuário repassar o
+repositório de um projeto pelo GitHub (para o cliente, para outro desenvolvedor, para a
+comunidade), quem receber precisa conseguir usar o código sem depender da configuração
+pessoal de agentes do usuário nem esbarrar nela.
+
+- Os subagentes ficam em `~/.claude/agents/`, fora de qualquer repositório de projeto —
+  nunca dentro do repositório do site do cliente.
+- Cada projeto de cliente é um repositório próprio, separado deste repositório
+  `agents-web` (que guarda só a definição do time) e separado dos demais projetos de
+  cliente entre si.
+- Dentro de cada repositório de projeto, se o usuário optar por versionar configuração
+  local do Claude Code para aquele projeto (`.claude/settings.json`, um `CLAUDE.md` de
+  projeto, overrides locais de agente), essa pasta `.claude/` fica sempre como uma
+  pasta **irmã, em paralelo**, ao código do site — nunca dentro dela, e o código do
+  site nunca depende de nada que esteja dentro de `.claude/` para funcionar.
+- **Teste de portabilidade:** o site precisa buildar, rodar e fazer deploy normalmente
+  mesmo que a pasta `.claude/` seja completamente removida do repositório. Isso vale
+  como critério de aceite para `backend-senior` e `frontend-senior` — nunca referenciar
+  caminhos dentro de `.claude/` em imports, scripts de build, variáveis de ambiente ou
+  configuração de deploy.
+- Ao iniciar um projeto novo (fim da Fase 0), a estrutura de pastas do repositório do
+  cliente já nasce com essa separação, por exemplo:
+
+  ```
+  cliente-xyz/
+  ├── .claude/          (opcional, tooling do usuário — pode ser removido sem quebrar o site)
+  ├── docs/
+  │   └── briefing-cliente.md
+  ├── src/ (ou app/)    (código do site — autocontido)
+  ├── public/
+  └── README.md
+  ```
+
 ## Fase 0 — Descoberta (briefing do cliente)
 
 Requisito do usuário: antes de qualquer projeto novo de site começar a ser desenhado
@@ -178,6 +214,9 @@ passo 1 decide a profundidade do processo proporcionalmente ao tamanho da mudan�
   - logs estruturados (não `console.log` solto).
 - Segue as convenções do framework do projeto (Express, NestJS, Django, Rails,
   Next.js API routes/Route Handlers, etc.) em vez de impor um padrão genérico.
+- **Portabilidade:** nunca cria dependência do código de produção em relação à pasta
+  `.claude/` (imports, scripts de build, variáveis de ambiente carregadas de lá,
+  etc.) — ver "Isolamento entre a infraestrutura de agentes e o código do projeto".
 
 ### `frontend-senior` — Frontend Sênior
 
@@ -209,6 +248,8 @@ passo 1 decide a profundidade do processo proporcionalmente ao tamanho da mudan�
   - `prefers-reduced-motion` sempre respeitado com uma versão reduzida/estática da
     experiência;
   - imagens otimizadas (`next/image`, lazy loading, formatos AVIF/WebP).
+- **Portabilidade:** mesma regra do `backend-senior` — o código do site nunca depende
+  da pasta `.claude/` para buildar ou rodar.
 
 ### `ui-ux-accessibility` — UI/UX & Acessibilidade
 
@@ -257,7 +298,8 @@ passo 1 decide a profundidade do processo proporcionalmente ao tamanho da mudan�
 3. Execução do plano (`/superpowers:subagent-driven-development`), que produz:
    - os 6 arquivos `~/.claude/agents/*.md` descritos acima;
    - o novo bloco "Orquestração de Projetos Web" em `~/.claude/CLAUDE.md`, incluindo a
-     Fase 0 de Descoberta com o checklist de briefing do cliente.
+     Fase 0 de Descoberta com o checklist de briefing do cliente e a regra de
+     isolamento/portabilidade entre `.claude/` e o código do projeto.
 
 ## Fora de escopo
 
