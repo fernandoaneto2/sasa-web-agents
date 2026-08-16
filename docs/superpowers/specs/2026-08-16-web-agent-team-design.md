@@ -52,10 +52,82 @@ Cada arquivo de agente segue o formato padrão de subagente do Claude Code:
 frontmatter (`name`, `description`, `tools`, opcionalmente `model`) seguido do prompt
 de sistema do agente.
 
+## Fase 0 — Descoberta (briefing do cliente)
+
+Requisito do usuário: antes de qualquer projeto novo de site começar a ser desenhado
+ou codificado, o time precisa reunir o briefing do cliente. Sem isso, `architect` e
+`frontend-senior` tomam decisões no escuro (paleta, densidade de texto, estrutura de
+páginas) que geram retrabalho.
+
+Esta fase só roda **uma vez por projeto novo de cliente** — tarefas de manutenção,
+correção de bug ou pequenas mudanças em um site já existente pulam direto para a
+Triagem (passo 1 do fluxo abaixo), reaproveitando o briefing já coletado anteriormente
+(se existir, deve ser salvo em `docs/briefing-cliente.md` no repositório do projeto do
+cliente e reconsultado, em vez de perguntado de novo).
+
+Quem conduz a Fase 0 é a sessão principal (papel de Tech Lead), diretamente com quem
+está operando o Claude Code — não um subagente. As perguntas abaixo cobrem as
+categorias padrão usadas por agências e freelancers de web design para escopar um
+projeto (goals, público, budget, timeline, brand assets, inspiração visual) e foram
+adaptadas para alimentar especificamente os outros 6 agentes do time:
+
+- **Negócio & objetivo** *(alimenta `architect`)* — nome da empresa/marca; ramo de
+  atuação; objetivo principal do site (institucional, geração de leads, venda online,
+  portfólio, agendamento); público-alvo; principais concorrentes; diferencial
+  competitivo / proposta de valor.
+- **Identidade visual & marca** *(alimenta `frontend-senior` e `ui-ux-accessibility`)*
+  — já existe marca/logo pronta (e em qual formato)? existe manual de marca? paleta de
+  cores definida ou preferências (e cores a evitar)? tipografia definida ou
+  preferências? personalidade da marca em três palavras.
+- **Conteúdo & copy** *(alimenta `frontend-senior`)* — o copy já está pronto,
+  parcialmente pronto ou precisa ser escrito do zero? tom de voz desejado (formal,
+  descontraído, técnico, inspirador)? densidade de texto por seção — mais
+  textual/explicativo, equilibrado, ou minimalista (poucas palavras, o visual conduz a
+  mensagem)? idiomas do site.
+- **Mídia & assets** *(alimenta `frontend-senior`)* — existem fotos/vídeos próprios de
+  qualidade profissional? precisa de banco de imagens (stock) ou geração de imagem?
+  existem vídeos institucionais ou materiais de campanha reaproveitáveis? há
+  necessidade de galeria/portfólio com múltiplas imagens por item?
+- **Estrutura & funcionalidades** *(alimenta `architect` e `backend-senior`)* — quais
+  páginas/seções são necessárias; precisa de formulário de contato/orçamento (quais
+  campos); precisa de integração com CRM, WhatsApp, e-mail marketing, pagamento ou
+  agendamento; precisa de blog/CMS editável pelo próprio cliente; precisa de área
+  logada; é e-commerce (quantos produtos, qual gateway); precisa de múltiplos idiomas.
+- **Estilo de interação & experiência** *(alimenta `frontend-senior` e
+  `ui-ux-accessibility`, específico do padrão GSAP/scroll do time)* — o cliente quer
+  uma experiência altamente animada/imersiva (estilo Lando Norris) ou uma abordagem
+  mais sóbria/institucional? há seção que pede scroll horizontal (portfólio, timeline,
+  produtos)? existe conteúdo que se beneficia de storytelling visual (scrollytelling de
+  processo, linha do tempo, cases)? sites de referência que o cliente admira e o que
+  especificamente gostou neles.
+- **Técnico & operacional** *(alimenta `architect`)* — já existe domínio/hospedagem
+  contratados? quem vai manter o site depois do lançamento (o cliente via CMS ou sempre
+  via desenvolvedor)? prazo desejado; orçamento de referência.
+- **SEO & metas de conversão** *(alimenta `architect` e `qa-test-strategy`)* —
+  palavras-chave relevantes para o negócio; meta de conversão principal (formulário,
+  compra, ligação, agendamento); existe site anterior e o que manter/descartar dele.
+
+**Como conduzir:** perguntar por categoria, em blocos pequenos, não as ~30 perguntas de
+uma vez. Perguntas de múltipla escolha (tom de voz, densidade de texto, nível de
+animação) usam a ferramenta de pergunta estruturada; perguntas abertas (nome da
+empresa, palavras-chave, referências) são feitas em texto corrido. Qualquer categoria
+já respondida ou claramente não aplicável (ex: site institucional simples não precisa
+de pergunta de gateway de pagamento) é pulada. "Não sei / decida por mim" é uma
+resposta válida em qualquer pergunta — não deve travar o início do projeto; nesse caso
+o agente relevante (`architect` ou `frontend-senior`) decide com base em boas práticas
+e registra a decisão explicitamente para validação posterior do cliente.
+
+Ao final da Fase 0, o briefing coletado é salvo em `docs/briefing-cliente.md` no
+repositório do projeto do cliente, servindo de insumo direto para `architect` (Fase de
+Triagem) e `frontend-senior`.
+
 ## Fluxo de orquestração (bloco a ser adicionado no CLAUDE.md global)
 
 Quando uma tarefa de projeto web é recebida:
 
+0. **Descoberta.** Se for um projeto novo de cliente (ainda sem `docs/briefing-cliente.md`),
+   conduzir a Fase 0 descrita acima antes de qualquer outra etapa. Projetos já
+   briefados ou tarefas de manutenção pulam direto para o passo 1.
 1. **Triagem.** Decidir se a tarefa é grande/estrutural o bastante para exigir o
    `architect` antes de qualquer código (nova stack, nova integração, decisão de banco,
    estratégia de auth, REST vs. GraphQL vs. tRPC, etc). Tarefas pequenas pulam essa
@@ -184,7 +256,8 @@ passo 1 decide a profundidade do processo proporcionalmente ao tamanho da mudan�
 2. Plano de implementação (`/superpowers:writing-plans`).
 3. Execução do plano (`/superpowers:subagent-driven-development`), que produz:
    - os 6 arquivos `~/.claude/agents/*.md` descritos acima;
-   - o novo bloco "Orquestração de Projetos Web" em `~/.claude/CLAUDE.md`.
+   - o novo bloco "Orquestração de Projetos Web" em `~/.claude/CLAUDE.md`, incluindo a
+     Fase 0 de Descoberta com o checklist de briefing do cliente.
 
 ## Fora de escopo
 
