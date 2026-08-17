@@ -37,7 +37,7 @@ A Claude Code plugin: a senior-level web development team of 7 specialist subage
 2. **Parallel implementation** — `backend-senior` and `frontend-senior` run in parallel on non-overlapping scope.
 3. **Quality** — `qa-test-strategy` and `ui-ux-accessibility` run in parallel once implementation lands.
 4. **Final review** — `code-reviewer` runs last, in isolation, read-only.
-5. **Consolidate** — `consolidator` reads the raw QA/UI-UX/code-review reports and returns one prioritized fix list; findings get triaged and fixed before anything is handed back as done.
+5. **Consolidate** — `consolidator` synthesizes the QA, UI/UX, and code-review findings into one prioritized fix list, reading the on-disk UI/UX audit report itself so the orchestrator doesn't have to; findings get triaged and fixed before anything is handed back as done.
 
 ## Design philosophy
 

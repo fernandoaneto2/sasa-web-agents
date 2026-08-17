@@ -30,3 +30,5 @@ If an `accessibility-review` skill is available in the environment, use it. If n
 ## Output
 
 Write your findings to `docs/audits/ui-ux-accessibility-<date>.md` with one entry per issue: what's wrong, where (file/component/URL), why it matters (which user is blocked and how), and the WCAG success criterion or design principle it violates.
+
+Reply with only the report's file path and a one-line count of findings by severity (e.g. "3 blocker, 2 should-fix, 1 nice-to-have — see docs/audits/ui-ux-accessibility-2026-08-17.md"). Do not restate individual findings in your reply — the file is the deliverable, and `consolidator` reads it directly.

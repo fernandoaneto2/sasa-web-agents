@@ -99,7 +99,7 @@ Dispatch `code-reviewer` last, in an isolated context, read-only — security, p
 
 ## Step 5 — Consolidate
 
-Do not read `docs/audits/*.md` or any other on-disk QA/audit artifact yourself. Dispatch `consolidator`, passing it inline whatever `qa-test-strategy` and `code-reviewer` already returned in Steps 3–4, plus the path(s) to any on-disk report those agents wrote (e.g. `docs/audits/ui-ux-accessibility-<date>.md`). It reads those directly, in its own isolated context, and returns one compact, prioritized fix list.
+Do not read `docs/audits/*.md` or any other on-disk QA/audit artifact yourself. Dispatch `consolidator`, passing it inline whatever `qa-test-strategy` and `code-reviewer` already returned in Steps 3–4, plus the path to the on-disk report `ui-ux-accessibility` wrote (e.g. `docs/audits/ui-ux-accessibility-<date>.md`). It reads that report directly, in its own isolated context, and returns one compact, prioritized fix list.
 
 Decide what from that list must be fixed before considering the task done. Only then report the result back to the user — never hand over unreviewed ("raw") code.
 
