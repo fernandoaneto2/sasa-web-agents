@@ -1,6 +1,6 @@
 # sasa-web-agents
 
-A Claude Code plugin: a senior-level web development team of 7 specialist subagents, plus a client-discovery-driven orchestration skill, for building client websites with highly dynamic interfaces (GSAP, horizontal/vertical scroll, images that interact with each other) — in the spirit of reference sites like the Lando Norris personal site.
+A Claude Code plugin: a senior-level web development team of 7 specialist subagents, plus a client-discovery-driven orchestration skill, for building client websites with highly dynamic interfaces (GSAP, horizontal/vertical scroll, images that interact with each other).
 
 ## Install
 
