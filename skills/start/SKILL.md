@@ -103,6 +103,10 @@ Gather the findings from QA, UI/UX, and Code Reviewer. Decide what must be fixed
 
 Small, single-file tasks don't need the full flow — Step 1's triage sets how much of this process a given task actually needs.
 
+## Model policy
+
+All seven subagents (`architect`, `backend-senior`, `frontend-senior`, `ui-ux-accessibility`, `qa-test-strategy`, `code-reviewer`, `consolidator`) are pinned to `model: sonnet`. None are downgraded to `haiku` — every one of them produces or judges senior-level code, architecture, or review output, which benefits from stronger reasoning than a classification/summarization model provides. None are escalated to `opus` — nothing in this team's current scope (client web projects: architecture decisions, implementation, tests, accessibility audits, code review) has shown a need for it, and doing so would raise cost without a matching quality requirement. Revisit only if a future task class clearly needs the extra capability.
+
 ## Portability rule (applies to every project this skill touches)
 
 Client site code must never depend on `.claude/` to build, run, or deploy. If the user versions a project-local `.claude/` folder, it stays a sibling of the site's source code, never inside it. This is what keeps a client's repository safely shareable on GitHub, independent of the user's personal Claude Code / sasa-web-agents tooling. See `backend-senior` and `frontend-senior` for the same rule stated as their acceptance criteria.
