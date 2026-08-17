@@ -6,7 +6,7 @@ A Claude Code plugin: a senior-level web development team of 6 specialist subage
 
 ```
 /plugin marketplace add fernandoamorim/sasa-web-agents
-/plugin install sasa-web-agents@fernandoamorim
+/plugin install sasa-web-agents@sasa-web-agents
 ```
 
 ## Use
