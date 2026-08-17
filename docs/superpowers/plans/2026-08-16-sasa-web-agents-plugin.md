@@ -946,6 +946,32 @@ git commit -m "Add structural validation pass and manual acceptance checklist"
 
 ---
 
+## Post-Implementation Correction
+
+The final whole-branch review (post-Task-11) found that `.claude-plugin/marketplace.json`
+was missing. A single-plugin repo still needs its own marketplace manifest to be
+installable via `/plugin marketplace add <owner>/<repo>` + `/plugin install
+<plugin>@<marketplace>` — confirmed against the `obra/superpowers` plugin actually
+installed on this machine, which ships both `.claude-plugin/plugin.json` and
+`.claude-plugin/marketplace.json` (with `"source": "./"`) side by side. The README's and
+acceptance checklist's install commands were also wrong: the `@` suffix in `/plugin
+install` is the marketplace's own `name` field, not the GitHub owner/org.
+
+This was fixed directly, not by re-running the Task 1–11 loop (those tasks were already
+individually reviewed and merged). The fix:
+
+- Added `.claude-plugin/marketplace.json` (`name: "sasa-web-agents"`, `source: "./"`).
+- Corrected `README.md`'s install example to `/plugin install sasa-web-agents@sasa-web-agents`.
+- Corrected the install command in `docs/superpowers/plans/2026-08-16-sasa-web-agents-plugin-acceptance.md`.
+- Recorded that Task 11's structural validation was independently re-run and passed
+  (new "## Validation ran" section in the acceptance checklist).
+- Corrected the design spec (`docs/superpowers/specs/2026-08-16-web-agent-team-design.md`)
+  so the marketplace.json requirement and the correct `@` semantics don't get re-derived
+  wrong in the future.
+
+See `/Users/fernandoamorim/Desktop/agents-web/.worktrees/sasa-web-agents-plugin/.superpowers/sdd/2026-08-16-sasa-web-agents-plugin/final-review-fix-report.md`
+for the full fix report.
+
 ## Self-Review Notes
 
 - **Spec coverage:** Task 1 covers the manifest; Tasks 2–7 cover all 6 agents with the exact tool grants and requirements from the spec's "Requisitos mínimos de cada agente"; Task 8 covers Fase 0 (all 8 question categories) and the 5-step orchestration flow; Task 9 covers the README table required by the spec's "Distribuição, instalação e invocação"; Task 10 covers the MIT license decision; Task 11 covers the spec's flagged open technical question (agent name resolution from within the skill) as an explicit, trackable checklist item rather than leaving it unaddressed.

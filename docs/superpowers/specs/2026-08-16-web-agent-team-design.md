@@ -53,9 +53,15 @@ como invocar em cada situação.
 ```
 sasa-web-agents/                       (raiz do plugin = raiz deste repositório)
 ├── .claude-plugin/
-│   └── plugin.json                    (manifesto: name, description, version, author,
-│                                        license, repository — único arquivo que vai
-│                                        dentro de .claude-plugin/)
+│   ├── plugin.json                    (manifesto: name, description, version, author,
+│   │                                    license, repository)
+│   └── marketplace.json               (manifesto de marketplace: mesmo repositório
+│                                        single-plugin se auto-hospeda como sua própria
+│                                        fonte de marketplace, com "source": "./" apontando
+│                                        para si mesmo — verificado empiricamente contra o
+│                                        plugin `superpowers` instalado nesta máquina, que
+│                                        também ships plugin.json E marketplace.json lado a
+│                                        lado dentro de .claude-plugin/)
 ├── agents/
 │   ├── architect.md
 │   ├── backend-senior.md
@@ -341,8 +347,18 @@ Code):**
 
 ```
 /plugin marketplace add <usuário>/sasa-web-agents
-/plugin install sasa-web-agents@<usuário>
+/plugin install sasa-web-agents@sasa-web-agents
 ```
+
+Nota: o sufixo `@` em `/plugin install` é o campo `name` do **próprio
+`marketplace.json`**, não o owner/org do GitHub. Como este repositório se
+auto-hospeda (`.claude-plugin/marketplace.json` com `"name": "sasa-web-agents"` e
+`"source": "./"`), o sufixo correto é sempre `@sasa-web-agents`, independente de quem
+fez o fork ou em qual conta do GitHub o repositório está publicado. Evidência: a chave
+do plugin `superpowers` instalado nesta máquina, em
+`~/.claude/plugins/installed_plugins.json`, é `"superpowers@superpowers-marketplace"` —
+que corresponde ao campo `name` de `superpowers-marketplace`'s
+`.claude-plugin/marketplace.json`, não ao owner do GitHub (`obra`).
 
 **Como invocar em cada situação** (isso vai para o README):
 
