@@ -31,6 +31,10 @@ async function main() {
     process.exit(0);
   }
 
+  if (!input || typeof input !== 'object') {
+    process.exit(0);
+  }
+
   const agentId = input.agent_id;
   const dataDir = process.env.CLAUDE_PLUGIN_DATA;
   if (!agentId || !dataDir) {
