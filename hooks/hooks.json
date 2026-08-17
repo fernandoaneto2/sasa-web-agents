@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "SubagentStart": [
+      {
+        "matcher": "architect|backend-senior|frontend-senior|qa-test-strategy|ui-ux-accessibility|code-reviewer|consolidator",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/log-agent-start.js\""
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "architect|backend-senior|frontend-senior|qa-test-strategy|ui-ux-accessibility|code-reviewer|consolidator",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/log-agent-stop.js\""
+          }
+        ]
+      }
+    ]
+  }
+}
