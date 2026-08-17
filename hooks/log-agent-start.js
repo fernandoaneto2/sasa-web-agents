@@ -27,7 +27,7 @@ async function main() {
     process.exit(0);
   }
 
-  const agentId = input.agent_id;
+  const agentId = String(input.agent_id || '').replace(/[^A-Za-z0-9_-]/g, '');
   const dataDir = process.env.CLAUDE_PLUGIN_DATA;
   if (!agentId || !dataDir) {
     process.exit(0);
@@ -44,4 +44,4 @@ async function main() {
   process.exit(0);
 }
 
-main();
+main().catch(() => process.exit(0));

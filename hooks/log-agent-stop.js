@@ -13,7 +13,7 @@ function readStdin() {
 
 function csvEscape(value) {
   const s = String(value == null ? '' : value);
-  if (/[",\n]/.test(s)) {
+  if (/[",\r\n]/.test(s)) {
     return '"' + s.replace(/"/g, '""') + '"';
   }
   return s;
@@ -35,13 +35,14 @@ async function main() {
     process.exit(0);
   }
 
-  const agentId = input.agent_id;
+  const agentId = String(input.agent_id || '').replace(/[^A-Za-z0-9_-]/g, '');
   const dataDir = process.env.CLAUDE_PLUGIN_DATA;
   if (!agentId || !dataDir) {
     process.exit(0);
   }
 
   try {
+    fs.mkdirSync(dataDir, { recursive: true });
     const startFile = path.join(dataDir, '.starts', agentId);
     const now = Date.now();
     let start = now;
@@ -52,8 +53,10 @@ async function main() {
     const durationSeconds = Math.max(0, Math.round((now - start) / 1000));
 
     const csvPath = path.join(dataDir, 'agent-durations.csv');
-    if (!fs.existsSync(csvPath)) {
-      fs.writeFileSync(csvPath, 'timestamp,agent_type,agent_id,session_id,cwd,duration_seconds\n');
+    try {
+      fs.writeFileSync(csvPath, 'timestamp,agent_type,agent_id,session_id,cwd,duration_seconds\n', { flag: 'wx' });
+    } catch {
+      // Already exists — fine, another invocation created it first.
     }
 
     const row = [
@@ -77,4 +80,4 @@ async function main() {
   process.exit(0);
 }
 
-main();
+main().catch(() => process.exit(0));
