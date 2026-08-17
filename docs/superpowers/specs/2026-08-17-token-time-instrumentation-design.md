@@ -40,7 +40,7 @@ sem precisar editar o próprio `~/.claude/settings.json`.
   a sessão inteira do usuário (todos os projetos, todo o tempo, não só quando os agentes
   do sasa-web-agents estão em uso). Redesenhado para os hooks `SubagentStart` /
   `SubagentStop`, que disparam especificamente ao redor de cada invocação de subagente e
-  cujo payload inclui `agent_type` — permitindo um hook `matcher` que só reage aos 6
+  cujo payload inclui `agent_type` — permitindo um hook `matcher` que só reage aos 7
   agentes deste plugin.
 - **Sem eval suite formal.** A spec original de tokens assume um "conjunto de avaliação"
   para validar que nenhuma otimização derruba a taxa de sucesso (RNF-01). Este plugin não
@@ -54,13 +54,13 @@ sem precisar editar o próprio `~/.claude/settings.json`.
 ### 1. Verificação documentada (sem mudança de código)
 
 `agents/*.md` já declara `tools:` mínimas por papel e `model: sonnet` uniforme em todos
-os 6 agentes. Confirmado nesta spec como já conforme às metas de RF-02 (tools sob
+os 7 agentes. Confirmado nesta spec como já conforme às metas de RF-02 (tools sob
 demanda) e ponto de partida de RF-08 (roteamento por modelo) das specs originais — não
 há gordura para cortar sem arriscar qualidade (RNF-01). Nenhuma mudança de arquivo aqui.
 
 ### 2. Política de modelo documentada (RF-08 adaptado)
 
-Adiciona uma seção curta em `skills/start/SKILL.md` explicando por que os 6 agentes
+Adiciona uma seção curta em `skills/start/SKILL.md` explicando por que os 7 agentes
 usam `sonnet` uniformemente: nenhum é rebaixado para `haiku` (a entrega é trabalho de
 nível sênior — código e revisão, não classificação/sumarização simples) e nenhum é
 promovido a `opus` (nenhuma tarefa no escopo atual justifica o custo adicional). Isso
@@ -92,8 +92,8 @@ hooks/
 ```
 
 - **`hooks.json`** registra `SubagentStart` e `SubagentStop`, ambos com
-  `matcher: "architect|backend-senior|frontend-senior|qa-test-strategy|ui-ux-accessibility|code-reviewer"`
-  — só reage aos 6 agentes deste plugin, ignora qualquer outro Task call na sessão do
+  `matcher: "architect|backend-senior|frontend-senior|qa-test-strategy|ui-ux-accessibility|code-reviewer|consolidator"`
+  — só reage aos 7 agentes deste plugin, ignora qualquer outro Task call na sessão do
   usuário.
 - **`log-agent-start.js`** lê o JSON do stdin (`agent_id`, `agent_type`, `session_id`,
   `cwd`), grava o epoch atual em `${CLAUDE_PLUGIN_DATA}/.starts/<agent_id>`.

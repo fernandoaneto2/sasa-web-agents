@@ -16,9 +16,9 @@ done. Check each box as you confirm it.
       final review) is correct — install would have failed on the old
       `@fernandoamorim` (owner-name) form.
 - [x] Ran `claude plugin details sasa-web-agents@sasa-web-agents` — component inventory
-      confirms all 6 agents registered under their exact bare names (`architect`,
+      confirms all 7 agents registered under their exact bare names (`architect`,
       `backend-senior`, `frontend-senior`, `ui-ux-accessibility`, `qa-test-strategy`,
-      `code-reviewer`) and 1 skill (`start`). **This resolves the open technical question
+      `code-reviewer`, `consolidator`) and 1 skill (`start`). **This resolves the open technical question
       from the spec's "Nota de validação técnica":** agents are registered plugin-wide
       under their bare names (not namespaced), so `skills/start/SKILL.md` dispatching
       them via bare `Agent` tool calls (e.g. `subagent_type: "architect"`) is correct as
@@ -30,9 +30,16 @@ done. Check each box as you confirm it.
       instead of erroring or doing nothing.
 - [ ] Answer a couple of discovery questions, then interrupt — confirm nothing crashes
       and you can resume the conversation normally.
-- [ ] In that fresh session, confirm the 6 agents also appear in `/context` under
+- [ ] In that fresh session, confirm the 7 agents also appear in `/context` under
       "Custom Agents" (component inventory above already confirms the plugin registers
       them; this step confirms the running session picked them up).
+- [ ] Trigger one live subagent invocation in that fresh session (e.g. dispatch any one
+      of the 7 agents) and check `${CLAUDE_PLUGIN_DATA}/agent-durations.csv` for a
+      matching row. Hook-firing was NOT end-to-end verified in a live install for this
+      plan — only the hook scripts themselves were tested by piping fake
+      `SubagentStart`/`SubagentStop` JSON at them directly. A real install + one live
+      subagent invocation + a CSV row check is still needed before fully trusting the
+      duration-logging feature.
 
 ## Validation ran
 
@@ -41,7 +48,7 @@ Independently re-run after Task 11 (not just claimed in the implementer's report
 ```
 $ jq -e '.name == "sasa-web-agents"' .claude-plugin/plugin.json
 true
-$ for a in architect backend-senior frontend-senior ui-ux-accessibility qa-test-strategy code-reviewer; do
+$ for a in architect backend-senior frontend-senior ui-ux-accessibility qa-test-strategy code-reviewer consolidator; do
     test -f "agents/$a.md" && grep -q "^name: $a$" "agents/$a.md" && grep -q '^description:' "agents/$a.md" && grep -q '^tools:' "agents/$a.md"
   done
 $ test -f skills/start/SKILL.md && grep -q '^name: start$' skills/start/SKILL.md
@@ -49,4 +56,4 @@ $ test -f README.md && test -f LICENSE
 ALL STRUCTURAL CHECKS PASS
 ```
 
-Note: when comparing `grep 'tools:' agents/*.md` output against an expected block, compare the *set* of lines, not their order — repeated runs in this sandbox printed the six lines in varying order across invocations (a shell buffering artifact), even though the underlying content was byte-identical every time.
+Note: when comparing `grep 'tools:' agents/*.md` output against an expected block, compare the *set* of lines, not their order — repeated runs in this sandbox printed the seven lines in varying order across invocations (a shell buffering artifact), even though the underlying content was byte-identical every time.
