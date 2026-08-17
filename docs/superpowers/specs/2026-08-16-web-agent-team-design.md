@@ -15,19 +15,34 @@ do piloto de F1 Lando Norris.
 O time é inspirado em um fluxo real de squad de engenharia: Tech Lead, Arquiteto,
 Backend Sênior, Frontend Sênior, UI/UX & Acessibilidade, QA e Code Reviewer.
 
+Requisito adicional: o time precisa ser **distribuível** — o usuário quer poder
+publicar isso como um repositório público no GitHub para que qualquer pessoa no mundo
+instale e use no próprio Claude Code, com um README explicando o que cada agente faz e
+como invocar em cada situação.
+
 ## Decisões de escopo
 
 - **Agentes executáveis, não só documentação.** O resultado final são subagentes reais
-  do Claude Code (`.claude/agents/*.md`), invocáveis via Agent tool, não apenas uma
-  descrição textual de requisitos.
-- **Escopo global.** Os agentes ficam em `~/.claude/agents/`, disponíveis em qualquer
-  projeto/cliente futuro na máquina — não amarrados a este repositório.
+  do Claude Code (arquivos `agents/*.md` com frontmatter `name`/`description`/`tools`),
+  invocáveis via Agent tool, não apenas uma descrição textual de requisitos.
+- **Distribuição como Claude Code Plugin.** Em vez de instruções pessoais em
+  `~/.claude/`, o time inteiro é empacotado como um **plugin** do Claude Code — a
+  unidade nativa de distribuição via GitHub, com manifesto próprio
+  (`.claude-plugin/plugin.json`), agentes em `agents/*.md` e a orquestração em uma
+  skill (`skills/start/SKILL.md`). Esse é o mesmo mecanismo do plugin `superpowers` já
+  usado pelo usuário (`/superpowers:brainstorming` etc.) — validado como o caminho
+  correto, porque instruções em `~/.claude/CLAUDE.md` são pessoais/locais e **não**
+  acompanham o repositório quando compartilhado no GitHub; um plugin, sim.
+- **Nome do plugin:** `sasa-web-agents`. Invocação da skill de orquestração:
+  `/sasa-web-agents:start` (o namespace `plugin:skill` é obrigatório no Claude Code —
+  não existe invocação "bare" de skill de plugin).
 - **Tech Lead não é um subagente separado.** A orquestração (decompor tarefa, decidir
   quem chamar e em que ordem, disparar trabalho em paralelo, consolidar resultado) é o
   papel que a própria sessão principal do Claude Code já exerce ao usar a ferramenta
   Agent. Criar um subagente "tech-lead" que por sua vez chama outros subagentes
   adicionaria uma camada de indireção sem benefício real. Em vez disso, o comportamento
-  de orquestração é documentado como instrução permanente em `~/.claude/CLAUDE.md`.
+  de orquestração é o conteúdo da skill `skills/start/SKILL.md`, carregado sob demanda
+  quando o usuário digita `/sasa-web-agents:start`.
 - **Stack padrão para sites de cliente:** Next.js + React + TypeScript. GSAP (com
   ScrollTrigger) é a biblioteca padrão de animação; Lenis (ou equivalente) para smooth
   scroll. Esse padrão pode ser ajustado caso a caso por projeto, mas é o ponto de
@@ -36,21 +51,30 @@ Backend Sênior, Frontend Sênior, UI/UX & Acessibilidade, QA e Code Reviewer.
 ## Arquitetura
 
 ```
-~/.claude/
-├── CLAUDE.md                  (instruções globais existentes + novo bloco
-│                                "Orquestração de Projetos Web")
-└── agents/
-    ├── architect.md
-    ├── backend-senior.md
-    ├── frontend-senior.md
-    ├── ui-ux-accessibility.md
-    ├── qa-test-strategy.md
-    └── code-reviewer.md
+sasa-web-agents/                       (raiz do plugin = raiz deste repositório)
+├── .claude-plugin/
+│   └── plugin.json                    (manifesto: name, description, version, author,
+│                                        license, repository — único arquivo que vai
+│                                        dentro de .claude-plugin/)
+├── agents/
+│   ├── architect.md
+│   ├── backend-senior.md
+│   ├── frontend-senior.md
+│   ├── ui-ux-accessibility.md
+│   ├── qa-test-strategy.md
+│   └── code-reviewer.md
+├── skills/
+│   └── start/
+│       └── SKILL.md                   (Fase 0 de descoberta + fluxo de orquestração)
+├── README.md                          (o que cada agente faz + como invocar)
+└── LICENSE                            (MIT)
 ```
 
-Cada arquivo de agente segue o formato padrão de subagente do Claude Code:
-frontmatter (`name`, `description`, `tools`, opcionalmente `model`) seguido do prompt
-de sistema do agente.
+Cada arquivo de agente segue o formato padrão de subagente do Claude Code: frontmatter
+(`name`, `description`, `tools`, opcionalmente `model`) seguido do prompt de sistema do
+agente. Uma vez o plugin instalado, os 6 agentes ficam disponíveis automaticamente
+(aparecem em `/context` sob "Custom Agents" e podem ser chamados via Agent tool ou
+@-menção) — não é preciso nenhum passo extra de registro.
 
 ## Isolamento entre a infraestrutura de agentes e o código do projeto (portabilidade)
 
@@ -60,11 +84,14 @@ repositório de um projeto pelo GitHub (para o cliente, para outro desenvolvedor
 comunidade), quem receber precisa conseguir usar o código sem depender da configuração
 pessoal de agentes do usuário nem esbarrar nela.
 
-- Os subagentes ficam em `~/.claude/agents/`, fora de qualquer repositório de projeto —
-  nunca dentro do repositório do site do cliente.
+- O plugin `sasa-web-agents` (este repositório) é a única fonte dos 6 agentes. Uma vez
+  instalado pelo usuário (ou por qualquer pessoa que instale o plugin), o Claude Code
+  os disponibiliza globalmente — nunca copiados manualmente para dentro de um
+  repositório de projeto de cliente.
 - Cada projeto de cliente é um repositório próprio, separado deste repositório
-  `agents-web` (que guarda só a definição do time) e separado dos demais projetos de
-  cliente entre si.
+  `sasa-web-agents` (que guarda só a definição do time) e separado dos demais projetos
+  de cliente entre si. O repositório do plugin nunca contém código de nenhum site real,
+  e nenhum repositório de cliente contém os arquivos do plugin.
 - Dentro de cada repositório de projeto, se o usuário optar por versionar configuração
   local do Claude Code para aquele projeto (`.claude/settings.json`, um `CLAUDE.md` de
   projeto, overrides locais de agente), essa pasta `.claude/` fica sempre como uma
@@ -101,8 +128,10 @@ Triagem (passo 1 do fluxo abaixo), reaproveitando o briefing já coletado anteri
 (se existir, deve ser salvo em `docs/briefing-cliente.md` no repositório do projeto do
 cliente e reconsultado, em vez de perguntado de novo).
 
-Quem conduz a Fase 0 é a sessão principal (papel de Tech Lead), diretamente com quem
-está operando o Claude Code — não um subagente. As perguntas abaixo cobrem as
+A Fase 0 começa quando o usuário digita `/sasa-web-agents:start` para iniciar um
+projeto novo. Quem conduz é a sessão principal (papel de Tech Lead), seguindo as
+instruções da skill, diretamente com quem está operando o Claude Code — não um
+subagente. As perguntas abaixo cobrem as
 categorias padrão usadas por agências e freelancers de web design para escopar um
 projeto (goals, público, budget, timeline, brand assets, inspiração visual) e foram
 adaptadas para alimentar especificamente os outros 6 agentes do time:
@@ -157,9 +186,9 @@ Ao final da Fase 0, o briefing coletado é salvo em `docs/briefing-cliente.md` n
 repositório do projeto do cliente, servindo de insumo direto para `architect` (Fase de
 Triagem) e `frontend-senior`.
 
-## Fluxo de orquestração (bloco a ser adicionado no CLAUDE.md global)
+## Fluxo de orquestração (conteúdo da skill `skills/start/SKILL.md`)
 
-Quando uma tarefa de projeto web é recebida:
+Quando uma tarefa de projeto web é recebida (via `/sasa-web-agents:start`):
 
 0. **Descoberta.** Se for um projeto novo de cliente (ainda sem `docs/briefing-cliente.md`),
    conduzir a Fase 0 descrita acima antes de qualquer outra etapa. Projetos já
@@ -291,15 +320,61 @@ passo 1 decide a profundidade do processo proporcionalmente ao tamanho da mudan�
   - roda em contexto isolado do restante do desenvolvimento para dar uma segunda
     opinião genuinamente independente, sem viés de quem escreveu o código.
 
+## Distribuição, instalação e invocação
+
+**`plugin.json` (mínimo, validado contra a documentação oficial de plugins do Claude
+Code):**
+
+```json
+{
+  "name": "sasa-web-agents",
+  "description": "Time de agentes sênior para desenvolvimento de sites de cliente, com interfaces dinâmicas (GSAP, scroll horizontal/vertical) e briefing de descoberta embutido",
+  "version": "1.0.0",
+  "author": { "name": "<nome do usuário>" },
+  "homepage": "https://github.com/<usuário>/sasa-web-agents",
+  "repository": "https://github.com/<usuário>/sasa-web-agents",
+  "license": "MIT"
+}
+```
+
+**Como qualquer pessoa instala, a partir do GitHub:**
+
+```
+/plugin marketplace add <usuário>/sasa-web-agents
+/plugin install sasa-web-agents@<usuário>
+```
+
+**Como invocar em cada situação** (isso vai para o README):
+
+| Situação | Como invocar |
+|---|---|
+| Começar um projeto novo de cliente (ainda sem briefing) | `/sasa-web-agents:start` — dispara a Fase 0 de descoberta e, ao final, o fluxo de orquestração completo |
+| Retomar/continuar um projeto que já tem `docs/briefing-cliente.md` | `/sasa-web-agents:start` também — a skill detecta o briefing existente e pula direto para a Triagem |
+| Consultar um agente específico avulso, fora do fluxo completo (ex: só uma auditoria de acessibilidade num site que não foi feito com o time) | @-menção direta ou Agent tool no agente específico (ex: `ui-ux-accessibility`), sem passar pela skill |
+| Tarefa pequena de manutenção num projeto já existente | Não precisa da skill; o usuário pode chamar a sessão normalmente e, se fizer sentido, ela aciona os agentes relevantes diretamente |
+
+**Nota de validação técnica (a confirmar durante a implementação):** a forma exata como
+a skill `start` deve referenciar os 6 agentes do próprio plugin ao despachá-los (nome
+simples como `architect` vs. nome namespaced) não está 100% documentada e precisa ser
+testada empiricamente com o plugin instalado localmente antes da primeira publicação.
+Isso é uma tarefa do plano de implementação, não bloqueia a aprovação deste spec.
+
+Publicar o repositório no GitHub (criar o repositório remoto, dar push) é uma ação
+visível externamente — fica a critério do usuário decidir quando fazer isso; esta
+iniciativa entrega o plugin pronto localmente, versionado neste repositório git, mas
+não cria nem publica o repositório remoto sem confirmação explícita.
+
 ## Entregáveis desta iniciativa
 
 1. Este documento de spec, commitado neste repositório.
 2. Plano de implementação (`/superpowers:writing-plans`).
-3. Execução do plano (`/superpowers:subagent-driven-development`), que produz:
-   - os 6 arquivos `~/.claude/agents/*.md` descritos acima;
-   - o novo bloco "Orquestração de Projetos Web" em `~/.claude/CLAUDE.md`, incluindo a
-     Fase 0 de Descoberta com o checklist de briefing do cliente e a regra de
-     isolamento/portabilidade entre `.claude/` e o código do projeto.
+3. Execução do plano (`/superpowers:subagent-driven-development`), que produz, dentro
+   deste mesmo repositório (a raiz do plugin):
+   - `.claude-plugin/plugin.json`;
+   - os 6 arquivos `agents/*.md` descritos acima;
+   - `skills/start/SKILL.md` com a Fase 0 de Descoberta e o fluxo de orquestração;
+   - `README.md` explicando o que cada agente faz e como invocar em cada situação;
+   - `LICENSE` (MIT).
 
 ## Fora de escopo
 
@@ -307,3 +382,6 @@ passo 1 decide a profundidade do processo proporcionalmente ao tamanho da mudan�
   agentes reutilizável.
 - Não define pipeline de CI/CD, deploy ou hospedagem — cada projeto de cliente decide
   isso individualmente com apoio do `architect` quando chegar a hora.
+- Não inclui criar o repositório remoto no GitHub, dar push, nem submeter o plugin a
+  nenhum marketplace público — essas são ações de publicação que o usuário dispara
+  quando decidir, fora do escopo desta iniciativa.
