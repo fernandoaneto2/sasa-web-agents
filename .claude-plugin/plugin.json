@@ -1,0 +1,12 @@
+{
+  "name": "sasa-web-agents",
+  "description": "Senior-level web development team of 6 specialist subagents plus a client-discovery orchestration skill, for building client websites with highly dynamic interfaces (GSAP, horizontal/vertical scroll, interactive imagery).",
+  "version": "1.0.0",
+  "author": {
+    "name": "Fernando Amorim",
+    "email": "fernando.neto02@gmail.com"
+  },
+  "homepage": "https://github.com/fernandoamorim/sasa-web-agents",
+  "repository": "https://github.com/fernandoamorim/sasa-web-agents",
+  "license": "MIT"
+}
