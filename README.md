@@ -24,11 +24,18 @@ A Claude Code plugin: a senior-level web development team of 7 specialist subage
 |---|---|---|---|
 | `architect` | Structural decisions: monolith vs. services, API style, database, cache, auth strategy | Read, Grep, Glob, WebSearch, WebFetch, Write | Read-only on app code; writes only ADRs to `docs/adr/` |
 | `backend-senior` | API routes, data models, business logic, integrations | Read, Edit, Write, Bash, Grep, Glob | Enforces validation, consistent errors, no N+1, pagination, rate limiting, idempotency, secrets hygiene, structured logging |
-| `frontend-senior` | Components, state, routing, and the site's motion/interaction layer | Read, Edit, Write, Bash, Grep, Glob | Default stack: Next.js + React + TypeScript. Default motion stack: GSAP + ScrollTrigger, horizontal/vertical scroll, `prefers-reduced-motion` fallback |
+| `frontend-senior` | Components, state, routing, and the site's motion/interaction layer | Read, Edit, Write, Bash, Grep, Glob | Default stack: Next.js + React + TypeScript. Default motion stack: GSAP + ScrollTrigger, horizontal/vertical scroll, `prefers-reduced-motion` fallback — see the `gsap` skill below |
 | `ui-ux-accessibility` | Visual consistency, responsiveness, WCAG 2.1 AA audit | Read, Grep, Glob, Write | Read-only on app code; writes only audit reports to `docs/audits/`. Also checks that GSAP/scroll sections stay accessible |
 | `qa-test-strategy` | Unit, integration, and e2e tests | Read, Edit, Write, Bash, Grep, Glob | Covers edge cases, malicious input, network failures — not just the happy path |
 | `code-reviewer` | Final independent review: security, performance, correctness, standards | Read, Grep, Glob, Bash | Fully read-only — no Edit/Write tool at all |
 | `consolidator` | Synthesizes QA/UI-UX/code-review findings into one prioritized fix list | Read, Grep, Glob | Reads on-disk reports itself so the orchestrator never has to; read-only |
+
+## Skills
+
+| Skill | Use |
+|---|---|
+| `start` | `/sasa-web-agents:start` — client discovery + orchestration flow |
+| `gsap` | Reference + driver for GSAP + ScrollTrigger animation (install, `useGSAP()`, `prefers-reduced-motion` fallback, and a Playwright-based `verify-gsap.mjs` script that confirms an animation actually fires on the built page). Auto-loaded by `frontend-senior` when implementing the motion/interaction layer — see `skills/gsap/SKILL.md`. |
 
 ## How orchestration works (`/sasa-web-agents:start`)
 
