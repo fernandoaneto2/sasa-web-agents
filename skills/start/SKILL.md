@@ -1,6 +1,6 @@
 ---
 name: start
-description: Use to kick off or resume a client web project with the sasa-web-agents team — runs the client discovery briefing (once per project) then orchestrates architect, backend-senior, frontend-senior, qa-test-strategy, ui-ux-accessibility, code-reviewer, and consolidator through triage, parallel implementation, quality, review, and consolidation.
+description: Use to kick off or resume a client web project with the sasa-web-agents team — runs the client discovery briefing (once per project) then orchestrates architect, backend-senior, frontend-senior, qa-test-strategy, ui-ux-accessibility, code-reviewer, and consolidator through risk-tiered triage, parallel implementation, a single parallel quality-and-review batch, and consolidation.
 ---
 
 # sasa-web-agents: start
@@ -81,35 +81,37 @@ Save everything collected to `docs/briefing-cliente.md` in the client's project 
 
 Also make sure the project's folder structure keeps `.claude/` (if versioned at all) as a sibling of the site's source code, never containing it — see the portability rule below.
 
-## Step 1 — Triage
+## Step 1 — Triage: classify before dispatching anything
 
-Decide whether this task is big/structural enough to need `architect` before any code: new stack, new integration, database decision, auth strategy, REST vs. GraphQL vs. tRPC, etc. Small tasks skip straight to Step 2.
+Every task gets one of three tiers before you spawn a single agent. This is the main lever for delivery speed — it decides how many agent round-trips the task pays for, not the model or the agents' own thoroughness (see Model policy).
 
-If `architect` is needed, dispatch it and wait for its ADR(s) in `docs/adr/` before proceeding.
+- **Trivial** — single file or a tightly-contained handful, no new dependency, no schema/auth/API-contract change, nothing another part of the app could plausibly break from (copy edit, style/spacing tweak, prop rename, adding one static section, a config value). Skip subagent dispatch entirely: implement it yourself as the Tech Lead, run the project's lint/typecheck/build, and confirm it against `docs/briefing-cliente.md` before reporting done. No `architect`, no quality/review pass, no `consolidator` — the full flow is disproportionate to the risk.
+- **Standard** — the common case: a contained feature (new component, route, endpoint, integration) with no structural/architecture decision buried in it. Skip `architect`. Go straight to Step 2, then Step 3.
+- **Structural** — new stack, new integration, database decision, auth strategy, REST vs. GraphQL vs. tRPC, or anything else with a lasting cross-cutting consequence. Dispatch `architect` and wait for its ADR(s) in `docs/adr/` before Step 2.
+
+When genuinely unsure between Standard and Structural, default to Structural — an unneeded ADR costs one extra round-trip, a skipped one costs a wrong foundation. When unsure between Trivial and Standard, default to Standard — the quality/review pass is cheap relative to shipping a real defect.
 
 ## Step 2 — Parallel implementation
 
 When the task touches both backend and frontend, dispatch `backend-senior` and `frontend-senior` in the background, in parallel, each with a clear, non-overlapping scope of files/routes/components to avoid conflicts.
 
-## Step 3 — Quality
+## Step 3 — Quality & review (single parallel batch)
 
-Once implementation is done, dispatch `qa-test-strategy` (writes unit/integration/e2e tests) and `ui-ux-accessibility` (audits visual consistency, responsiveness, WCAG, and animation accessibility) — these can run in parallel with each other, since both are read-mostly consumers of the code that was just implemented.
+Dispatch all three in the background, in parallel, in one batch: `qa-test-strategy` (writes unit/integration/e2e tests), `ui-ux-accessibility` (audits visual consistency, responsiveness, WCAG, and animation accessibility), and `code-reviewer` (security, performance, logical correctness, adherence to team standards). This is safe because none of the three consumes another's output — all three are independent, read-mostly reviewers of the same already-implemented code that Step 2 produced (`code-reviewer` reviews the implementation, not `qa-test-strategy`'s tests or `ui-ux-accessibility`'s report). Running them as one three-way batch instead of two-then-one removes a full sequential round-trip from every task that reaches this step, with no reduction in what gets checked.
 
-## Step 4 — Final review
+## Step 4 — Consolidate
 
-Dispatch `code-reviewer` last, in an isolated context, read-only — security, performance, logical correctness, adherence to the team's standards.
-
-## Step 5 — Consolidate
-
-Do not read `docs/audits/*.md` or any other on-disk QA/audit artifact yourself. Dispatch `consolidator`, passing it inline whatever `qa-test-strategy` and `code-reviewer` already returned in Steps 3–4, plus the path to the on-disk report `ui-ux-accessibility` wrote (e.g. `docs/audits/ui-ux-accessibility-<date>.md`). It reads that report directly, in its own isolated context, and returns one compact, prioritized fix list.
+Do not read `docs/audits/*.md` or any other on-disk QA/audit artifact yourself. Dispatch `consolidator`, passing it inline whatever `qa-test-strategy` and `code-reviewer` already returned in Step 3, plus the path to the on-disk report `ui-ux-accessibility` wrote (e.g. `docs/audits/ui-ux-accessibility-<date>.md`). It reads that report directly, in its own isolated context, and returns one compact, prioritized fix list.
 
 Decide what from that list must be fixed before considering the task done. Only then report the result back to the user — never hand over unreviewed ("raw") code.
 
-Small, single-file tasks don't need the full flow — Step 1's triage sets how much of this process a given task actually needs.
+Trivial-tier tasks (Step 1) skip Steps 3–4 entirely — that's the formal fast path, not an ad hoc shortcut.
 
 ## Model policy
 
 All seven subagents (`architect`, `backend-senior`, `frontend-senior`, `ui-ux-accessibility`, `qa-test-strategy`, `code-reviewer`, `consolidator`) are pinned to `model: sonnet`. None are downgraded to `haiku` — every one of them produces or judges senior-level code, architecture, or review output, which benefits from stronger reasoning than a classification/summarization model provides. None are escalated to `opus` — nothing in this team's current scope (client web projects: architecture decisions, implementation, tests, accessibility audits, code review) has shown a need for it, and doing so would raise cost without a matching quality requirement. Revisit only if a future task class clearly needs the extra capability.
+
+Delivery speed is deliberately *not* pursued by downgrading a reasoning-heavy role to a faster/cheaper model — that trades away the quality this team exists to deliver. The two levers this skill actually pulls are the risk-tiered triage above (don't pay for a review pass a change doesn't need) and running independent agents in one parallel batch instead of sequentially (Step 3) — both cut wall-clock time and agent round-trips without asking any single agent to think less carefully.
 
 ## Portability rule (applies to every project this skill touches)
 

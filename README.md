@@ -43,11 +43,10 @@ A Claude Code plugin: a senior-level web development team of 7 specialist subage
 ## How orchestration works (`/sasa-web-agents:start`)
 
 0. **Discovery** — if `docs/briefing-cliente.md` doesn't exist yet, the skill asks a structured set of questions (business, brand, copy, media, functionality, interaction style, technical, SEO) and saves the answers there. Existing briefings are reused, not re-asked.
-1. **Triage** — decide if the task needs `architect` first.
+1. **Triage** — classify the task Trivial / Standard / Structural before dispatching anything. Trivial tasks (a single contained file, no dependency/schema/contract change) skip the entire flow below — the Tech Lead implements and self-checks directly. Structural tasks (new stack, new integration, DB/auth decisions) get `architect` first. Standard tasks (the common case) skip straight to step 2.
 2. **Parallel implementation** — `backend-senior` and `frontend-senior` run in parallel on non-overlapping scope.
-3. **Quality** — `qa-test-strategy` and `ui-ux-accessibility` run in parallel once implementation lands.
-4. **Final review** — `code-reviewer` runs last, in isolation, read-only.
-5. **Consolidate** — `consolidator` synthesizes the QA, UI/UX, and code-review findings into one prioritized fix list, reading the on-disk UI/UX audit report itself so the orchestrator doesn't have to; findings get triaged and fixed before anything is handed back as done.
+3. **Quality & review — one parallel batch** — `qa-test-strategy`, `ui-ux-accessibility`, and `code-reviewer` all run together, in parallel, in a single dispatch. All three are independent read-mostly reviewers of the same implementation (none consumes another's output), so batching them removes a full sequential round-trip compared to running review after quality.
+4. **Consolidate** — `consolidator` synthesizes the QA, UI/UX, and code-review findings into one prioritized fix list, reading the on-disk UI/UX audit report itself so the orchestrator doesn't have to; findings get triaged and fixed before anything is handed back as done.
 
 ## Design philosophy
 
@@ -57,6 +56,9 @@ A Claude Code plugin: a senior-level web development team of 7 specialist subage
 
 ## Efficiency
 
+- **Risk-tiered triage.** Not every task pays for the full flow — Step 1 classifies each task Trivial/Standard/Structural before any agent is dispatched. A Trivial change (single contained file, no dependency/schema/contract change) skips `architect`, the quality/review batch, and `consolidator` entirely; the Tech Lead implements and self-checks it directly. This is the main lever for delivery speed in this plugin — proportional review, not weaker review.
+- **One parallel quality-and-review batch instead of two sequential ones.** `qa-test-strategy`, `ui-ux-accessibility`, and `code-reviewer` are independent, read-mostly reviewers of the same implementation — none consumes another's output. They used to run as "QA + UI/UX in parallel, then code review after"; now all three dispatch together in one batch, cutting a full sequential agent round-trip from every Standard/Structural task with no change to what gets checked.
+- **Model choice is not the speed lever.** All seven subagents stay on `sonnet` (see `skills/start/SKILL.md`'s Model policy) — downgrading a review or implementation role to a faster model would trade away the quality this team exists to deliver. Speed comes from doing less unnecessary work (triage) and doing independent work concurrently (batching), not from thinking less carefully.
 - **Delegated consolidation.** The orchestrating session never reads the raw UI/UX audit report (or other on-disk QA artifacts) directly — `consolidator` reads them in its own isolated context and returns a compact, deduplicated fix list instead. Measured against a representative 8-finding audit report: ~808 estimated tokens of raw report replaced by ~291 estimated tokens of synthesis, a ~63% reduction *for that one report, per consolidation cycle* (estimated at ~4 characters/token; not a plugin-wide token-usage claim — see `docs/superpowers/specs/2026-08-17-token-time-instrumentation-design.md` for the full method).
 - **Per-agent duration log.** Every invocation of the 7 subagents is timed automatically via bundled hooks and appended to a local CSV (`${CLAUDE_PLUGIN_DATA}/agent-durations.csv`) — no setup required, works for anyone who installs this plugin.
 
