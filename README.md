@@ -35,7 +35,10 @@ A Claude Code plugin: a senior-level web development team of 7 specialist subage
 | Skill | Use |
 |---|---|
 | `start` | `/sasa-web-agents:start` — client discovery + orchestration flow |
-| `gsap` | Reference + driver for GSAP + ScrollTrigger animation (install, `useGSAP()`, `prefers-reduced-motion` fallback, and a Playwright-based `verify-gsap.mjs` script that confirms an animation actually fires on the built page). Auto-loaded by `frontend-senior` when implementing the motion/interaction layer — see `skills/gsap/SKILL.md`. |
+| `gsap` | Reference + driver for GSAP + ScrollTrigger animation (install, `useGSAP()`, `prefers-reduced-motion` fallback, and a Playwright-based `verify-gsap.mjs` script that confirms an animation actually fires on the built page). Default motion library for scroll storytelling — see `skills/gsap/SKILL.md`. |
+| `animejs` | Reference + driver for anime.js v4 (`createScope()`, click/hover-triggered sequences, manual `prefers-reduced-motion` check). For imperative interaction animation, not scroll storytelling — see `skills/animejs/SKILL.md`. |
+| `react-spring` | Reference + driver for react-spring (`useSpring()`, built-in `useReducedMotion()`). For physics-based, interruptible hover/press feedback — see `skills/react-spring/SKILL.md`. |
+| `motion` | Reference + driver for Motion for React (motion.dev, npm package `motion`). For declarative `motion.div` props (`whileInView`, `whileHover`, `AnimatePresence`) — includes a verified fix for a real bug where Motion's own `useReducedMotion()`/`MotionConfig` didn't reliably disable animations in this container. See `skills/motion/SKILL.md`. |
 
 ## How orchestration works (`/sasa-web-agents:start`)
 
