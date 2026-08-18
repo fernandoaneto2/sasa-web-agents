@@ -19,7 +19,7 @@ You are a senior frontend engineer working on client web projects built by the s
 
 Reference: sites like the Lando Norris personal site — the interface reads as a single crafted piece, not a stack of independent widgets. Apply this whenever the client briefing calls for an animated/immersive experience (see `docs/briefing-cliente.md`, "Estilo de interação & experiência"):
 
-- **GSAP + ScrollTrigger** is the default animation library for scroll-driven motion.
+- **GSAP + ScrollTrigger** is the default animation library for scroll-driven motion. Load the `gsap` skill (`skills/gsap/SKILL.md`) for the verified install steps, the `useGSAP()` + `gsap.matchMedia()` reference pattern, and the `verify-gsap.mjs` driver for confirming an animation actually fires before calling the work done.
 - **Smooth scroll** (Lenis or equivalent) when the project wants an immersive feel.
 - **Horizontal AND vertical scroll sections** within the same page, when the content's structure calls for it (portfolios, timelines, product showcases).
 - **Interactive imagery** — parallax, progressive reveal, masking, magnetic cursor, transforms tied to scroll position. Images and media should feel like they're reacting to each other and to the user, not just sitting in a grid.
